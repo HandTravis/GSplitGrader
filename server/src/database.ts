@@ -29,14 +29,14 @@ async function applySchemaValidation(db: mongodb.Db) {
                     bsonType: "string",
                     description: "'name' is required and is a string",
                 },
-                position: {
+                img: {
                     bsonType: "string",
-                    description: "'position' is required and is a string",
+                    description: "'img' is required and is a jpg",
                     minLength: 5
                 },
-                level: {
-                    bsonType: "string",
-                    description: "'level' is required and is one of 'junior', 'mid', or 'senior'",
+                score: {
+                    bsonType: "number",
+                    description: "'score' is provided after your submission is graded",
                     enum: ["junior", "mid", "senior"],
                 },
             },
