@@ -7,25 +7,22 @@ import { Submission } from './submission';
 })
 export class SubmissionService {
   private apiUrl = 'http://localhost:5200';
-  //submissions$ = signal<Submission[]>([]);
+  submissions$ = signal<Submission[]>([]);
   submission$ = signal<Submission>({} as Submission);
   
   constructor(private httpClient: HttpClient) {} 
 
-  // Uncomment if you want to fetch all submissions for competition
-  // note that this will need an accompanying API endpoint implementation
-
-  // private refreshSubmissions() {
-  //   this.httpClient.get<Submission[]>('${this.url}/submissions')
-  //   .subscribe(submissions => {
-  //     this.submissions$.set(submissions);
-  //   });
-  // }
-  //
-  // getSubmissions() {
-  //   this.refreshSubmissions();
-  //   return this.submissions$
-  // }
+  private refreshSubmissions() {
+    this.httpClient.get<Submission[]>('${this.url}/submissions')
+    .subscribe(submissions => {
+      this.submissions$.set(submissions);
+    });
+  }
+  
+  getSubmissions() {
+    this.refreshSubmissions();
+    return this.submissions$
+  }
 
   getSubmission(id: string) {
     this.httpClient.get<Submission>(`${this.apiUrl}/submissions/${id}`)
