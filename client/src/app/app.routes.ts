@@ -5,5 +5,5 @@ import { SubmissionHistoryComponent } from './submission-history/submission-hist
 
 export const routes: Routes = [
     { path: '', component: HomepageComponent, title: 'Home Page'},
-    { path: 'history', component: SubmissionHistoryComponent}
+    // { path: 'history', component: SubmissionHistoryComponent}
 ];
