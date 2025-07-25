@@ -29,7 +29,7 @@ import { SubmissionHistoryComponent } from '../submission-history/submission-his
   `,
   styles: `
     mat-card {
-      background-color: #f0f0f0; // Or any desired color code
+      background-color: #f0f0f0; /* Or any desired color code */
     }
 
     .card-grid-container {
