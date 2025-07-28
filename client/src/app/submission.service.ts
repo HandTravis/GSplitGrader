@@ -1,4 +1,4 @@
-import { Injectable, signal, ɵsetAllowDuplicateNgModuleIdsForTest } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Submission } from './submission';
 
@@ -13,19 +13,19 @@ export class SubmissionService {
   constructor(private httpClient: HttpClient) {} 
 
   private refreshSubmissions() {
-    this.httpClient.get<Submission[]>('${this.url}/submissions')
-    .subscribe(submissions => {
-      this.submissions$.set(submissions);
-    });
+    this.httpClient.get<Submission[]>(`${this.apiUrl}/submission`)
+      .subscribe(submissions => {
+        this.submissions$.set(submissions);
+      });
   }
   
   getSubmissions() {
     this.refreshSubmissions();
-    return this.submissions$
+    return this.submissions$;
   }
 
   getSubmission(id: string) {
-    this.httpClient.get<Submission>(`${this.apiUrl}/submissions/${id}`)
+    this.httpClient.get<Submission>(`${this.apiUrl}/submission/${id}`)
       .subscribe(submission => {
         this.submission$.set(submission);
       });
@@ -33,16 +33,27 @@ export class SubmissionService {
   }
 
   createSubmission(submission: Submission) {
-    return this.httpClient.post<Submission>(`${this.apiUrl}/submissions`, submission);
+    return this.httpClient.post<Submission>(`${this.apiUrl}/submission`, submission);
   }
 
   updateSubmission(id: string, submission: Submission) {
-    return this.httpClient.put<Submission>(`${this.apiUrl}/submissions/${id}`, submission);
+    return this.httpClient.put<Submission>(`${this.apiUrl}/submission/${id}`, submission);
   }
 
   deleteSubmission(id: string) {
-    return this.httpClient.delete(`${this.apiUrl}/submissions/${id}`, {
+    return this.httpClient.delete(`${this.apiUrl}/submission/${id}`, {
       responseType: 'text'
     });
+  }
+
+  uploadImage(image: string) {
+    const payload = { image };
+    return this.httpClient.post<{
+      name: string;
+      message: string;
+      submissionId: string;
+      inference: any;
+      createdAt: Date;
+    }>(`${this.apiUrl}/submission/upload`, payload);
   }
 }

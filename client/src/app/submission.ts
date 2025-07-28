@@ -1,6 +1,7 @@
 export interface Submission {
-    name: string;
-    img: string; // double check correct type
-    score: number;
-    _id?: string;
+    name?: string;
+    message?: string;
+    submissionId?: string;
+    inference: any;
+    createdAt?: Date;
 }

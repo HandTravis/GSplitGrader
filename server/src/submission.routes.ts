@@ -1,7 +1,16 @@
 import * as express from "express";
 import { ObjectId } from "mongodb";
 import { collections } from "./database";
+import { Request, Response } from "express";
+import fs from 'fs/promises';
+
+import multer from 'multer';
+const upload = multer({ dest: 'uploads/' });
+
 export const submissionRouter = express.Router();
+
+const { ROBOFLOW_URI } = process.env;
+
 submissionRouter.use(express.json());
 submissionRouter.get("/", async (req, res) => {
     try {
@@ -32,20 +41,57 @@ submissionRouter.get("/:id", async (req, res) => {
     }
 });
 
-submissionRouter.post("/", async (req, res) => {
+// submissionRouter.post("/", async (req, res) => {
+//     try {
+//         const newSubmission = req.body;
+//         const result = await collections?.submissions?.insertOne(newSubmission);
+//         if (result?.acknowledged) {
+//             res.status(201).send(`New submission created with id ${result.insertedId}`);
+//         } else {
+//             res.status(500).send("Failed to create new submission");
+//         }
+//     } catch (error) {
+//         console.error(error);
+//         res.status(400).send(error instanceof Error ? error.message : "An unknown error occurred");
+//     }
+// });
+
+submissionRouter.post("/upload", async (req: Request, res: Response) => {
     try {
-        const newSubmission = req.body;
-        const result = await collections?.submissions?.insertOne(newSubmission);
-        if (result?.acknowledged) {
-            res.status(201).send(`New submission created with id ${result.insertedId}`);
-        } else {
-            res.status(500).send("Failed to create new submission");
-        }
+      const base64Image = req.body.image;
+      if (!base64Image) {
+        return res.status(400).send("No image data provided");
+      }
+  
+      const response = await fetch('https://serverless.roboflow.com/infer/workflows/travis-hand/detect-and-classify-2', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          api_key: process.env.ROBOFLOW_URI,
+          inputs: {
+            image: { type: 'base64', value: base64Image }
+          }
+        })
+      });
+  
+      const result = await response.json();
+  
+      const dbResult = await collections?.submissions?.insertOne(result);
+      if (dbResult?.acknowledged) {
+        return res.status(201).send({
+          message: "Submission successful",
+          submissionId: dbResult.insertedId,
+          inference: result,
+        });
+      } else {
+        return res.status(500).send("Failed to create new submission");
+      }
     } catch (error) {
-        console.error(error);
-        res.status(400).send(error instanceof Error ? error.message : "An unknown error occurred");
+      console.error(error);
+      res.status(500).send("Failed to process image");
     }
-});
+  });
+  
 
 submissionRouter.put("/:id", async (req, res) => {
     try {

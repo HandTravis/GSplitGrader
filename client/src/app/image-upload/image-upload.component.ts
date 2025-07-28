@@ -2,24 +2,24 @@ import { Component } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { Router, ActivatedRoute } from '@angular/router';
 import { SubmissionService } from '../submission.service';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-image-upload',
-  imports: [MatCardModule],
+  imports: [MatCardModule, MatButtonModule],
   template: `
     <mat-card>
-      <mat-card-header>
-        <mat-card-title>G Split Score:</mat-card-title>
-      </mat-card-header>
       <mat-card-content>
-        <p>insert scores and model inferences here</p>
-        <button
-          mat-raised-button
-          color="primary"
-          (click)="navToScore()"
-        >
-            Upload Image
-        </button>
+        <input
+          type="file"
+          accept="image/*"
+          (change)="onImageSelected($event)"
+          hidden
+          #fileInput
+        />
+      <button mat-raised-button color="primary" (click)="fileInput.click()">
+        Upload Image
+      </button>
       </mat-card-content>
     </mat-card>
   `,
@@ -30,13 +30,32 @@ import { SubmissionService } from '../submission.service';
   `
 })
 export class ImageUploadComponent {
-
   constructor(
-    private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private submissionService: SubmissionService
   ) {}
 
-  navToScore() {
-    this.router.navigate(['/score'])
+  onImageSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+  
+    const file = input.files[0];
+    const reader = new FileReader();
+  
+    reader.onload = () => {
+      const base64Data = (reader.result as string).replace(/^data:image\/\w+;base64,/, '');
+      this.submissionService.uploadImage(base64Data).subscribe({
+        next: (res) => {
+          console.log('Inference:', res.inference);
+          this.router.navigate(['/score'], { state: { inference: res.inference } });
+        },
+        error: (err) => {
+          console.error('Upload failed:', err);
+        }
+      });
+    };
+  
+    reader.readAsDataURL(file);  // this triggers `reader.onload`
   }
+  
 }
